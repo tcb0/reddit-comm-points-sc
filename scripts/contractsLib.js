@@ -8,7 +8,6 @@ const l1Provider = new ethers.providers.JsonRpcProvider(
     process.env.ETH_PROVIDER_URL
 );
 
-
 const globalInbox = (async () => {
 
     let l1wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC);

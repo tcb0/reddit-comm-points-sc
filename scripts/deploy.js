@@ -11,9 +11,14 @@ const main = async () => {
   const deployerWallet = ethers.provider.getSigner();
   const deployerWalletAddress = await deployerWallet.getAddress();
 
-  const points = await deploy("SubredditPoints_v0")
-  const dist = await deploy("Distributions_v0")
-  const subs = await deploy("Subscriptions_v0")
+  const points = await deploy("SubredditPoints_v0", [deployerWalletAddress, "Reddit", "CommunityPoints", "CP",[]])
+
+  const dist = await deploy("Distributions_v0", [points.address, deployerWalletAddress, '2000000', '1000000', '2000000', '1000', '5'])
+  await points.updateDistributionContract(dist.address);
+
+  const subs = await deploy("Subscriptions_v0", [points.address,"1", "60","6"])
+  await points.authorizeOperator(subs.address);
+  const symbol = await points.symbol()
 
 
   fs.writeFileSync('contract_addresses.json',JSON.stringify({
@@ -22,11 +27,8 @@ const main = async () => {
     pointsAddress: points.address
   }), 'utf-8');
 
-  console.log(
-    " 💾  Artifacts (address, abi, and args) saved to: ",
-    chalk.blue("packages/hardhat/artifacts/"),
-    "\n\n"
-  );
+  console.info('*** SubredditPoints_v0 symbol: ***', symbol);
+  console.info('Contracts setup successfully!');
 };
 
 const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) => {
@@ -88,51 +90,8 @@ const abiEncodeArgs = (deployed, contractArgs) => {
   return encoded;
 };
 
-// checks if it is a Solidity file
-const isSolidity = (fileName) =>
-  fileName.indexOf(".sol") >= 0 && fileName.indexOf(".swp") < 0 && fileName.indexOf(".swap") < 0;
 
-const readArgsFile = (contractName) => {
-  let args = [];
-  try {
-    const argsFile = `./contracts/${contractName}.args`;
-    if (!fs.existsSync(argsFile)) return args;
-    args = JSON.parse(fs.readFileSync(argsFile));
-  } catch (e) {
-    console.log(e);
-  }
-  return args;
-};
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// If you want to verify on https://tenderly.co/
-const tenderlyVerify = async ({contractName, contractAddress}) => {
-
-  let tenderlyNetworks = ["kovan","goerli","mainnet","rinkeby","ropsten","matic","mumbai","xDai","POA"]
-  let targetNetwork = process.env.HARDHAT_NETWORK || config.defaultNetwork
-
-  if(tenderlyNetworks.includes(targetNetwork)) {
-    console.log(chalk.blue(` 📁 Attempting tenderly verification of ${contractName} on ${targetNetwork}`))
-
-    await tenderly.persistArtifacts({
-      name: contractName,
-      address: contractAddress
-    });
-
-    let verification = await tenderly.verify({
-        name: contractName,
-        address: contractAddress,
-        network: targetNetwork
-      })
-
-    return verification
-  } else {
-      console.log(chalk.grey(` 🧐 Contract verification not supported on ${targetNetwork}`))
-  }
-}
 
 main()
   .then(() => process.exit(0))

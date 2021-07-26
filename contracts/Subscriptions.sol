@@ -2,17 +2,17 @@
  *Submitted for verification at Etherscan.io on 2020-06-09
 */
 
-// File: @openzeppelin/upgrades/contracts/Initializable.sol
 
-pragma solidity >=0.4.24 <=0.6.0;
+pragma solidity ^0.8.0;
 
-import "./lib.sol";
+import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./ISubredditPoints.sol";
 
 
-
-
-
-contract Subscriptions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignature {
+contract Subscriptions_v0 is Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -38,18 +38,13 @@ contract Subscriptions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
     // END OF VARS
     // ------------------------------------------------------------------------------------
 
-    function initialize(
-        address owner_,
-        address gsnApprover,
+    constructor(
         address subredditPoints,
         uint256 price_,
         uint256 duration_,
         uint256 renewBefore_
-    ) external initializer {
-        require(owner_ != address(0), "Subscriptions: owner should not be 0");
+    )  {
 
-        Ownable.initialize(owner_);
-        UpdatableGSNRecipientSignature.initialize(gsnApprover);
         _subredditPoints = subredditPoints;
 
         updatePrice(price_);
@@ -126,9 +121,5 @@ contract Subscriptions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
 
     function expiration(address account) public view returns (uint256) {
         return _subscriptions[account];
-    }
-
-    function updateGSNApprover(address gsnApprover) external onlyOwner {
-        updateSigner(gsnApprover);
     }
 }

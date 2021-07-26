@@ -1,16 +1,14 @@
-/**
- *Submitted for verification at Etherscan.io on 2020-06-09
-*/
+pragma solidity ^0.8.0;
 
-// File: @openzeppelin/upgrades/contracts/Initializable.sol
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "./ISubredditPoints.sol";
 
-pragma solidity >=0.4.24 <=0.6.0;
 
-import "./lib.sol";
-import "hardhat/console.sol";
-
-contract Distributions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignature {
-   
+contract Distributions_v0 is Ownable {
 
     struct SharedOwner {
         address account;
@@ -79,29 +77,20 @@ contract Distributions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
     // ------------------------------------------------------------------------------------
 
 
-    function initialize(
-        address owner_,
+    constructor(
         address subredditPoints_,                    // ISubredditPoints + IERC20 token contract address
         address karmaSource_,                        // Karma source provider address
-        address gsnApprover_,                        // GSN approver address
         uint256 initialSupply_,
         uint256 nextSupply_,
         uint256 initialKarma_,
         uint256 roundsBeforeExpiration_,              // how many rounds are passed before claiming is possible
-        uint256 supplyDecayPercent_,                  // defines percentage of next rounds' supply from the current
-        address[] calldata sharedOwners_,
-        uint256[] calldata sharedOwnersPercs_           // index of percentages must correspond to _sharedOwners array
-    ) external initializer {
+        uint256 supplyDecayPercent_                  // defines percentage of next rounds' supply from the current
+    ) {
         require(initialSupply_ > 0 && initialSupply_ <= MAX_ROUND_SUPPLY, "Distributions: initial supply should be > 0 and <= MAX_ROUND_SUPPLY");
         require(initialKarma_ > 0, "Distributions: initial karma should be more than 0");
         require(nextSupply_ > 0 && nextSupply_ <= MAX_ROUND_SUPPLY, "Distributions: nextSupply should be > 0 and <= MAX_ROUND_SUPPLY");
         require(karmaSource_ != address(0), "Distributions: karma source should not be 0");
-        require(gsnApprover_ != address(0), "Distributions: GSN approver should not be 0");
-        require(owner_ != address(0), "Distributions: owner should not be 0");
-        require(sharedOwners_.length == sharedOwnersPercs_.length, "Shared owners: Addresses array must be same length as percentages");
 
-        Ownable.initialize(owner_);
-        UpdatableGSNRecipientSignature.initialize(gsnApprover_);
         updateSupplyDecayPercent(supplyDecayPercent_);
         updateRoundsBeforeExpiration(roundsBeforeExpiration_);
 
@@ -116,22 +105,18 @@ contract Distributions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
         initialSupply = initialSupply_;
         nextSupply = nextSupply_;
 
-        for (uint i = 0; i < sharedOwners_.length; i++) {
-            _updateSharedOwner(sharedOwners_[i], sharedOwnersPercs_[i]);
-        }
-
         uint256 sharedOwnersPoints = calcSharedOwnersAvailablePoints(initialSupply);
         _distributionRounds[0] = DistributionRound({
-            availablePoints: initialSupply,
-            sharedOwnersAvailablePoints: sharedOwnersPoints,
-            totalKarma: initialKarma_
+        availablePoints: initialSupply,
+        sharedOwnersAvailablePoints: sharedOwnersPoints,
+        totalKarma: initialKarma_
         });
 
         emit AdvanceRound(0, initialSupply, sharedOwnersPoints);
     }
 
+
     function batchMint(bytes memory input) public {
-        console.log("Sending batch minting event to subreddit points...");
         require(_msgSender() == karmaSource, "Distributions: only karma source can distribute");
         ISubredditPoints(subredditPoints).batchMint(input);
     }
@@ -294,10 +279,6 @@ contract Distributions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
         emit KarmaSourceUpdated(_karmaSource, prevKarmaSource);
     }
 
-    function updateGSNApprover(address gsnApprover) external onlyOwner {
-        updateSigner(gsnApprover);
-    }
-
     // shared owners get their points 1 round later within advancement
     // increasing total shared percentage can lead to some of the owners not receiving their cut within a next round
     function updateSharedOwner(address account, uint256 percent) external onlyOwner {
@@ -318,7 +299,7 @@ contract Distributions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
                         sharedOwners[i] = sharedOwners[sharedOwners.length-1];
                     }
                     // remove tail
-                    sharedOwners.length = sharedOwners.length - 1;
+                    sharedOwners.pop();
                 } else {
                     sharedOwners[i].percent = percent;
                 }
@@ -358,8 +339,8 @@ contract Distributions_v0 is Initializable, Ownable, UpdatableGSNRecipientSignat
         bytes memory bStr = bytes(str);
         bytes memory bLower = new bytes(bStr.length);
         for (uint i = 0; i < bStr.length; i++) {
-            if ((int8(bStr[i]) >= 65) && (int8(bStr[i]) <= 90)) {
-                bLower[i] = bytes1(int8(bStr[i]) + 32);
+            if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) {
+                bLower[i] = bytes1(uint8(bStr[i]) + 32);
             } else {
                 bLower[i] = bStr[i];
             }

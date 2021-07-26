@@ -1,0 +1,29 @@
+command: node scripts/batchMint.js --dataset bricks --encType bitmap --round round_1_finalized --test true
+
+logs:
+Deployer address 0xCf3C4c291CE0aD0Ef5f6De577Cd19D6D6ecF4DB6
+minting 00101011_0, bytes: 1803
+tx minted 0xf837e4176a6cbc386c299bda41a746e0f18fe3165bc11332d60beb0d5def2bde
+minting 00101011_1, bytes: 203
+tx minted 0x126d13edb9d02db66ed14594425a9e3e6432410f228cb627bc7fab6a010948d6
+Used 11327700 ArbGas
+Make L1 aggregator tx 0x45ff743408b6380188c013bfecce162a0377099b68ea8e0f3bbc6b1d507d518f, gasUsed: 90061
+Make L1 aggregator tx 0xf73b8dabaf52b0a1a56d42d635494bf4ce5f75cdefd10062d3501084b1d2375c, gasUsed: 63949
+Used 154010 L1 gas over 2 batches
+Done batch minting.
+
+
+command: node scripts/batchMint.js --dataset bricks --encType bitmap --round round_2_finalized --test true
+
+logs:
+Deployer address 0xCf3C4c291CE0aD0Ef5f6De577Cd19D6D6ecF4DB6
+minting 11111111_0, bytes: 19
+tx minted 0x966951c5250106f6273680ecf49a5d010e148dfdcf64a54166bd3f580678761e
+minting 11111111_1, bytes: 8
+tx minted 0xbbfc9ec1cb8a7b74a4f46d80e524fc1e680170dee3c620b001351bc902f60dcb
+Used 12568395 ArbGas
+Make L1 aggregator tx 0xd67ae7332b3b59c881ec6fb55d313716fa4878a70e0682096292811e611ae54f, gasUsed: 60889
+Make L1 aggregator tx 0x2588c3e87c46ca90d6e39cecf38d67813d2f4c452a917c5703889b323c296438, gasUsed: 60769
+Used 121658 L1 gas over 2 batches
+Done batch minting.
+

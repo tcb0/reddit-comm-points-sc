@@ -72,17 +72,17 @@ const getL1gasStats = async (startBlockHeight, endBlockHeight, txHashData) => {
         totalGasUsed = totalGasUsed.add(txnReceipt.gasUsed);
         let gasUsed = txnReceipt.gasUsed.toNumber();
         l1TxsData.push({
-           txHash: log.transactionHash,
-           from: tx.from,
-           to: tx.to,
-           gasUsed: gasUsed,
-           gasPrice: tx.gasPrice.toNumber(),
-           gasLimit: tx.gasLimit.toNumber(),
-           data: tx.data,
-           dataLength: tx.data.length,
-           fileName: txHashData[i].fileName,
-           l2TxHash: txHashData[i].txHash,
-           l2TxBytes: txHashData[i].bytes
+            txHash: log.transactionHash,
+            from: tx.from,
+            to: tx.to,
+            gasUsed: gasUsed,
+            gasPrice: tx.gasPrice.toNumber(),
+            gasLimit: tx.gasLimit.toNumber(),
+            data: tx.data,
+            dataLength: tx.data.length,
+            fileName: txHashData[i].fileName,
+            l2TxHash: txHashData[i].txHash,
+            l2TxBytes: txHashData[i].bytes
         });
     }
     console.info(
